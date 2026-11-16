@@ -193,30 +193,24 @@ for ( let row = -3; row <= 2; row++ ) {
 }
 scene.add( city );
 
-const sculpture = new THREE.Group();
-sculpture.position.set( -3.6, 0, 3.6 );
-sculpture.rotation.y = -0.28;
-addBox( sculpture, stone, 1.7, 0.3, 0.8, 0, 0.15, 0 );
-addBox( sculpture, glow, 1.45, 0.035, 0.6, 0, 0.3, 0 );
-scene.add( sculpture );
-
-const sculptureMaterial = new THREE.MeshStandardMaterial( {
-  color: 0xf3be72,
-  emissive: 0x502517,
-  roughness: 0.4,
-  metalness: 0.35,
-  flatShading: true,
+const modelFolder = `${import.meta.env.BASE_URL}models/`;
+const fountainTexture = new THREE.TextureLoader().load( `${modelFolder}fountain.png` );
+fountainTexture.colorSpace = THREE.SRGBColorSpace;
+const fountainMaterial = new THREE.MeshStandardMaterial( {
+  map: fountainTexture,
+  roughness: 0.85,
 } );
 
 const objLoader = new OBJLoader();
-objLoader.load( `${import.meta.env.BASE_URL}models/aura.obj`, ( model ) => {
+objLoader.load( `${modelFolder}fountain.obj`, ( model ) => {
   model.traverse( ( object ) => {
-    if ( object.isMesh ) object.material = sculptureMaterial;
+    if ( object.isMesh ) object.material = fountainMaterial;
   } );
-  model.position.y = 0.325;
-  sculpture.add( model );
+  const bounds = new THREE.Box3().setFromObject( model );
+  model.position.set( -3.6, -bounds.min.y, 3.6 );
+  scene.add( model );
 }, undefined, ( error ) => {
-  console.error( 'De sculptuur kon niet worden geladen.', error );
+  console.error( 'De fontein kon niet worden geladen.', error );
 } );
 
 window.addEventListener( 'resize', () => {
