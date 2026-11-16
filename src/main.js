@@ -18,7 +18,7 @@ controls.minDistance = 10;
 controls.maxDistance = 90;
 controls.maxPolarAngle = Math.PI / 2 - 0.04;
 controls.target.set( 0, 6, 0 );
-camera.position.set( 15, 11, 23 );
+camera.position.set( 4, 11, 24 );
 controls.update();
 
 scene.add( new THREE.HemisphereLight( 0xc5d8ff, 0x60526c, 2.0 ) );
@@ -127,6 +127,54 @@ const nameCard = new THREE.Mesh(
 nameCard.position.set( 0, 2.75, 2.13 );
 skyscraper.add( nameCard );
 scene.add( skyscraper );
+
+const city = new THREE.Group();
+const ground = new THREE.MeshStandardMaterial( { color: 0x252939, roughness: 0.95 } );
+const pavement = new THREE.MeshStandardMaterial( { color: 0x49515b } );
+const roof = new THREE.MeshStandardMaterial( { color: 0x293345 } );
+addBox( city, ground, 140, 0.2, 140, 0, -0.22, 0 );
+addBox( city, pavement, 10.8, 0.12, 10.8, 0, -0.06, 0 );
+
+const cityFacades = [];
+for ( const [ wallColor, windowColor ] of [
+  [ '#343b54', '#9ab1d5' ],
+  [ '#374452', '#91b9bb' ],
+  [ '#483a52', '#cab5d1' ],
+] ) {
+  const windows = makeTexture( 128, 32, ( context ) => {
+    context.fillStyle = wallColor;
+    context.fillRect( 0, 0, 128, 32 );
+    for ( let column = 0; column < 5; column++ ) {
+      context.fillStyle = Math.random() < 0.55 ? windowColor : '#202937';
+      context.fillRect( 6 + column * 24, 7, 13, 16 );
+    }
+  } );
+  windows.wrapT = THREE.RepeatWrapping;
+  cityFacades.push( windows );
+}
+
+// Het middelste blok is het plein. De straat voor de ingang blijft vrij.
+for ( let row = -3; row <= 2; row++ ) {
+  for ( let column = -3; column <= 3; column++ ) {
+    if ( column === 0 && row >= 0 ) continue;
+
+    const x = column * 8;
+    const z = row * 8;
+    const floors = 3 + Math.floor( Math.random() * 8 );
+    const towerHeight = floors * 0.84;
+    const towerWidth = 3 + Math.random() * 2;
+    const towerDepth = 3 + Math.random() * 2;
+    const windows = cityFacades[ Math.floor( Math.random() * cityFacades.length ) ].clone();
+    windows.repeat.y = floors;
+    const facadeMaterial = new THREE.MeshStandardMaterial( { map: windows } );
+
+    addBox( city, pavement, 5.9, 0.12, 5.9, x, -0.06, z );
+    addBox( city, facadeMaterial, towerWidth, towerHeight, towerDepth, x, towerHeight / 2, z );
+    addBox( city, roof, towerWidth + 0.16, 0.22, towerDepth + 0.16, x, towerHeight + 0.11, z );
+    addBox( city, roof, towerWidth * 0.38, 0.5, towerDepth * 0.38, x, towerHeight + 0.47, z );
+  }
+}
+scene.add( city );
 
 window.addEventListener( 'resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
