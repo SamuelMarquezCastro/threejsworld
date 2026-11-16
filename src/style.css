@@ -44,3 +44,21 @@ header p {
   color: #e5d6cf;
   font-size: clamp(0.7rem, 1.3vw, 0.95rem);
 }
+
+#replay {
+  position: fixed;
+  bottom: clamp(1rem, 4vw, 3rem);
+  left: clamp(1rem, 5vw, 4rem);
+  padding: 0.75rem 1.1rem;
+  border: 1px solid #bf9b76;
+  border-radius: 0.35rem;
+  background: #121827e8;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+#replay:hover,
+#replay:focus-visible {
+  background: #373249;
+}

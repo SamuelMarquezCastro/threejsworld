@@ -18,9 +18,25 @@ controls.enablePan = false;
 controls.minDistance = 10;
 controls.maxDistance = 90;
 controls.maxPolarAngle = Math.PI / 2 - 0.04;
-controls.target.set( 0, 6, 0 );
-camera.position.set( 4, 11, 24 );
+const flight = new THREE.QuadraticBezierCurve3(
+  new THREE.Vector3( 11, 26, 46 ),
+  new THREE.Vector3( -1, 9, 25 ),
+  new THREE.Vector3( 0.65, 3.4, 11 )
+);
+const overviewTarget = new THREE.Vector3( 0, 7, 0 );
+const entranceTarget = new THREE.Vector3( 0, 2.7, 1 );
+const reducedMotion = window.matchMedia( '(prefers-reduced-motion: reduce)' );
+let flightStart = reducedMotion.matches ? null : performance.now();
+camera.position.copy( flight.v0 );
+controls.target.copy( overviewTarget );
 controls.update();
+
+controls.addEventListener( 'start', () => {
+  flightStart = null;
+} );
+document.querySelector( '#replay' ).addEventListener( 'click', () => {
+  flightStart = performance.now();
+} );
 
 scene.add( new THREE.HemisphereLight( 0xc5d8ff, 0x60526c, 2.0 ) );
 const sunset = new THREE.DirectionalLight( 0xffd0a0, 2.0 );
@@ -211,7 +227,15 @@ window.addEventListener( 'resize', () => {
 
 renderer.setAnimationLoop( animate );
 
-function animate() {
+function animate( time ) {
+  if ( flightStart !== null ) {
+    const progress = THREE.MathUtils.clamp( ( time - flightStart ) / 6500, 0, 1 );
+    const eased = THREE.MathUtils.smoothstep( progress, 0, 1 );
+    camera.position.copy( flight.getPoint( eased ) );
+    controls.target.lerpVectors( overviewTarget, entranceTarget, eased );
+    if ( progress === 1 ) flightStart = null;
+  }
+
   controls.update();
   renderer.render( scene, camera );
 }
