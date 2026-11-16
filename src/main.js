@@ -1,6 +1,7 @@
 import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2( 0x24263f, 0.014 );
@@ -175,6 +176,32 @@ for ( let row = -3; row <= 2; row++ ) {
   }
 }
 scene.add( city );
+
+const sculpture = new THREE.Group();
+sculpture.position.set( -3.6, 0, 3.6 );
+sculpture.rotation.y = -0.28;
+addBox( sculpture, stone, 1.7, 0.3, 0.8, 0, 0.15, 0 );
+addBox( sculpture, glow, 1.45, 0.035, 0.6, 0, 0.3, 0 );
+scene.add( sculpture );
+
+const sculptureMaterial = new THREE.MeshStandardMaterial( {
+  color: 0xf3be72,
+  emissive: 0x502517,
+  roughness: 0.4,
+  metalness: 0.35,
+  flatShading: true,
+} );
+
+const objLoader = new OBJLoader();
+objLoader.load( `${import.meta.env.BASE_URL}models/aura.obj`, ( model ) => {
+  model.traverse( ( object ) => {
+    if ( object.isMesh ) object.material = sculptureMaterial;
+  } );
+  model.position.y = 0.325;
+  sculpture.add( model );
+}, undefined, ( error ) => {
+  console.error( 'De sculptuur kon niet worden geladen.', error );
+} );
 
 window.addEventListener( 'resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
